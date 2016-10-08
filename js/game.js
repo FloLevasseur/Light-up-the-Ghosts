@@ -2,14 +2,14 @@ var game = new Phaser.Game(640, 800);
 
 var TitleScreen = function () {};
 var Gameplay = function () {};
-var titleText = null;
 
 game.constants = {
    
    GAMEPLAYTIMER: 24000,
    SCORETIMER: 26000,
    HOURS: ['Midnight', '01:00 am', '02:00 am', '03:00 am',
-           '04:00 am', '05:00 am', '06:00 am']
+           '04:00 am', '05:00 am', '06:00 am'],
+   TINTS: [0x285063, 0x63285a, 0x63282b, 0x2a6328]
 };
 
 var WebFontConfig = {
@@ -33,20 +33,25 @@ TitleScreen.prototype = {
       this.load.script('webfont',
                        '//ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js');
       
-      this.game.load.path = 'graphics/';
+      this.load.path = 'graphics/';
       
       this.load.spritesheet('ghost', 'ghost02.png', 32, 32);
-      this.game.load.image('whiteDisc', 'disc_white.png');
-      this.game.load.image('playAgainButton', 'button_play-again.png');
-      this.game.load.image('startButton', 'button_start.png');
-      this.game.load.image('letsGoButton', 'button_lets-go.png');
+      this.load.image('whiteDisc', 'disc_white.png');
+      this.load.image('playAgainButton', 'button_play-again.png');
+      this.load.image('startButton', 'button_start.png');
+      this.load.image('letsGoButton', 'button_lets-go.png');      
+      this.load.image('column', 'column.png');
+      this.load.image('lastBg', 'last_bg_stars.png');
+      this.load.image('bg', 'bg.png');            
       
-      this.game.load.path = 'sounds/';
+      this.load.path = 'sounds/';
       
       this.load.audio('touch01', 'touch01.wav');
       this.load.audio('touch02', 'touch02.wav');
       this.load.audio('touch03', 'touch03.wav');
-      this.load.audio('frenchPride', 'rooster.ogg');
+      this.load.audio('frenchPride', ['rooster.ogg', 'rooster.mp3']);
+      this.load.audio('cuckoo', ['cuckoo.ogg', 'cuckoo.mp3']);
+      this.load.audio('sparrows', ['sparrows.ogg', 'sparrows.mp3']);
    },
    
    
@@ -63,7 +68,7 @@ TitleScreen.prototype = {
    
    
    
-   displayTitleScreen: function () {      
+   displayTitleScreen: function () {
       
       this.titleText = this.add.text(this.world.centerX,
                                      this.world.centerY - 150,
@@ -99,7 +104,7 @@ TitleScreen.prototype = {
       
       this.versionText = this.add.text(this.world.width - 2,
                                       this.world.height - 2,
-                                      'v1.0');
+                                      'v1.2');
       this.versionText.anchor.setTo(1);
       this.versionText.font = 'Chela One';
       this.versionText.fontSize = 24;
@@ -165,7 +170,60 @@ Gameplay.prototype = {
    
    create: function () {
       
-      this.stage.backgroundColor = 0x130c00;
+      this.physics.startSystem(Phaser.Physics.ARCADE);
+
+      // Random tint of the level
+      var rdIndex = this.rnd.integerInRange(0, game.constants.TINTS.length - 1);
+      var currentTint = game.constants.TINTS[rdIndex];
+      
+      // Outdoor background
+      var gameplayLastBg = this.add.tileSprite(0,
+                                               0,
+                                               640,
+                                               800,
+                                               'lastBg');      
+      
+      // Indoor background with random window
+      var windowTop = this.rnd.integerInRange(140, 280);
+      var windowLeft = this.rnd.integerInRange(128, 512);
+      var windowHeight = this.rnd.integerInRange(70, 140);
+      var windowWidth = this.rnd.integerInRange(70, 140);
+      
+      // Top section
+      var gameplayBg01 = this.add.tileSprite(0,
+                                             0,
+                                             640,
+                                             windowTop,
+                                             'bg');
+      
+      // Down section
+      var gameplayBg02 = this.add.tileSprite(0,
+                                             windowTop + windowHeight,
+                                             640,
+                                             800 - (windowTop + windowHeight),
+                                             'bg');
+      
+      // Left section
+      var gameplayBg03 = this.add.tileSprite(0,
+                                             0,
+                                             windowLeft,
+                                             800,
+                                             'bg');
+      
+      // Right section
+      var gameplayBg04 = this.add.tileSprite(windowLeft + windowWidth,
+                                             0,
+                                             640 - (windowLeft + windowWidth),
+                                             800,
+                                             'bg');
+      
+      gameplayLastBg.tint = currentTint;
+      gameplayBg01.tint = currentTint;
+      gameplayBg02.tint = currentTint;
+      gameplayBg03.tint = currentTint;
+      gameplayBg04.tint = currentTint;
+      
+      
       
       this.score = 0;
       this.bestScore = 0;
@@ -175,16 +233,36 @@ Gameplay.prototype = {
          this.bestScore = localStorage.getItem('hi-score');      
       }
       
+      
+      
       this.target = this.add.sprite(300, 300, 'ghost');
       this.target.scale.set(2);
-      this.target.smoothed = false;
+//      this.target.smoothed = false;
       this.target.frame = 0;
       this.target.alpha = 0.9;
       this.target.inputEnabled = true;
-      this.isClicked = false;
+      this.target.isClicked = false;
+      this.target.type = 'still';
       this.target.events.onInputDown.add(this.clickedIt, this);
       
-      this.tremorRect = new Phaser.Rectangle(this.target.x, this.target.y, 6, 3);      
+      this.physics.arcade.enable(this.target);
+      
+      this.tremorRect = new Phaser.Rectangle(this.target.x, this.target.y, 6, 3);
+      
+      
+      
+      // Random column on foreground
+      var columnLeft = this.rnd.integerInRange(64, 576 - 92);
+      
+      this.gameplayFg = this.add.tileSprite(columnLeft,
+                                           0,
+                                           92,
+                                           800,
+                                           'column');
+      
+      this.gameplayFg.tint = currentTint;
+      
+      
       
       this.light = this.add.sprite(-200, 0, 'whiteDisc');
       this.light.anchor.set(0.5);
@@ -224,14 +302,45 @@ Gameplay.prototype = {
       this.ghostSounds.push(this.add.audio('touch02'));
       this.ghostSounds.push(this.add.audio('touch03'));
       
-      this.rooster = this.add.audio('frenchPride');
+      this.dawnSounds = [];      
+      this.dawnSounds.push(this.add.audio('frenchPride'));
+      this.dawnSounds.push(this.add.audio('cuckoo'));
+      this.dawnSounds.push(this.add.audio('sparrows'));
    },
    
    
    
    update: function () {
       
-      this.tremorRect.random(this.target);
+      // A still ghost should not be hidden behind foreground
+      if (this.target.type == 'still') {
+      
+         if (this.target.overlap(this.gameplayFg)) {
+
+            var x = this.rnd.between(0, this.game.width - this.target.width);
+            var y = this.rnd.between(0, this.game.height - this.target.height);         
+            this.target.x = x;
+            this.target.y = y;
+            this.tremorRect.x = x;
+            this.tremorRect.y = y;
+
+         } else if (!this.target.isClicked) {
+
+            this.target.alpha = 1;
+            this.tremorRect.random(this.target);
+         }
+      
+      } else if (!this.target.isClicked) {
+         
+         this.target.alpha = 1;
+         
+         if (!this.target.inCamera) {
+            
+            this.respawnGhost();
+         }         
+      }
+      
+      
       
       if (this.timeText.visible) {
          
@@ -243,39 +352,70 @@ Gameplay.prototype = {
    },
    
    
+   respawnGhost: function () {
+      
+      var x = this.rnd.between(0, this.game.width - this.target.width);
+      var y = this.rnd.between(0, this.game.height - this.target.height);            
+
+      this.target.x = x;
+      this.target.y = y;
+      this.tremorRect.x = x;
+      this.tremorRect.y = y;
+
+      var newScale = this.rnd.between(2, 2.8);
+      this.target.scale.set(newScale);
+      this.target.frame = 0;
+      this.target.isClicked = false;
+
+      var movingGhost = this.rnd.between(0, 1);
+
+      if (movingGhost) {
+
+         this.target.type = 'moving';
+
+         var angle = this.rnd.between(0, 359);
+         var speed = this.rnd.between(100, 350);
+
+         this.physics.arcade.velocityFromAngle(angle, speed, this.target.body.velocity);
+
+      } else {
+
+         this.target.type = 'still';
+         this.target.body.velocity.set(0);
+      }      
+   },
+   
+   
    
    clickedIt: function (sprite, pointer) {
       
-      if (!sprite.isClicked) {
-         
-         sprite.frame = 1;
-         sprite.isClicked = true;
-         this.score ++;
-         
-         this.light.x = pointer.x;
-         this.light.y = pointer.y;
-         
-         var rdNb = this.rnd.integerInRange(0, 2);
-         this.ghostSounds[rdNb].play();
+      // If the player didn't click on the foreground
+      if (!Phaser.Rectangle.containsPoint(this.gameplayFg, pointer.position)) {
+      
+         if (!sprite.isClicked) {
 
-         var myTween = this.add.tween(sprite).to({ alpha: 0 }, 400, "Linear", true);
+            sprite.body.velocity.set(0);         
+            sprite.frame = 1;
+            sprite.isClicked = true;
+            this.score ++;
 
-         myTween.onComplete.add(function () {
+            this.light.x = pointer.x;
+            this.light.y = pointer.y;
+            this.light.alpha = 1;
 
-            var x = this.rnd.between(0, this.game.width - this.target.width);
-            var y = this.rnd.between(0, this.game.height - this.target.height);
-            sprite.x = x;
-            sprite.y = y;         
-            this.tremorRect.x = x;
-            this.tremorRect.y = y;
+            this.add.tween(this.light).to({alpha: 0}, 100, "Linear", true);
 
-            var newScale = this.rnd.between(1.4, 2.6);
-            sprite.scale.set(newScale);
-            sprite.alpha = 1;
-            sprite.frame = 0;
-            sprite.isClicked = false;
+            var rdNb = this.rnd.integerInRange(0, 2);
+            this.ghostSounds[rdNb].play();
 
-         }, this);
+            var ghostTween = this.add.tween(sprite).to({alpha: 0}, 400, "Linear", true);
+
+            ghostTween.onComplete.add(function () {
+
+               this.respawnGhost();
+
+            }, this);
+         }
       }
    },
    
@@ -292,7 +432,9 @@ Gameplay.prototype = {
       this.scoreText.x = this.world.centerX;
       this.scoreText.y = this.world.centerY - 100;
       
-      this.rooster.play();
+      var rdIndex = this.rnd.between(0, this.dawnSounds.length - 1);
+      
+      this.dawnSounds[rdIndex].play();
       
       this.scoreText.text = "Dawn is here !";
       this.scoreText.fill = '#f4cf82';
