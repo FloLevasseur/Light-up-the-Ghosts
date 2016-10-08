@@ -6,17 +6,16 @@ Code under MIT License.
 --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 
 Additional assets :
-
-
-  Creepster font : https://fonts.google.com/specimen/Creepster
   
-  Chela One font : https://fonts.google.com/specimen/Chela+One  
+  -Creepster font : https://fonts.google.com/specimen/Creepster
   
-  Rooster sound : http://freesound.org/people/dobroide/sounds/39923/
+  -Chela One font : https://fonts.google.com/specimen/Chela+One  
   
-  Cuckoo sound : https://freesound.org/people/FunnyMan374/sounds/128177
+  -Rooster sound : http://freesound.org/people/dobroide/sounds/39923/
   
-  Sparrows sound : https://freesound.org/people/ERH/sounds/30338/
+  -Cuckoo sound : https://freesound.org/people/FunnyMan374/sounds/128177
+  
+  -Sparrows sound : https://freesound.org/people/ERH/sounds/30338/
   
 --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 
