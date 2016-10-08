@@ -7,10 +7,15 @@ Code under MIT License.
 
 Additional assets :
 
-  Creepster font : https://fonts.google.com/specimen/Creepster  
+
+  Creepster font : https://fonts.google.com/specimen/Creepster
+  
   Chela One font : https://fonts.google.com/specimen/Chela+One  
+  
   Rooster sound : http://freesound.org/people/dobroide/sounds/39923/
+  
   Cuckoo sound : https://freesound.org/people/FunnyMan374/sounds/128177
+  
   Sparrows sound : https://freesound.org/people/ERH/sounds/30338/
   
 --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
@@ -18,11 +23,15 @@ Additional assets :
 V1.2 :
    
    -Adjusted ghosts sizes to play on small screens
+   
    -Adjusted window brightness
+   
    -Added MP3 sounds for browsers that don't support Ogg Vorbis
 
 V1.1 :
 
    -Added moving ghosts
+   
    -Added color schemes
+   
    -Added two sounds for game over
